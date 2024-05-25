@@ -1,9 +1,12 @@
 import { Router } from 'express';
-import { getUsers } from '../handlers/users';
+import { getUsers, getUserById } from '../handlers/users';
 
 const router = Router();
 
-// api/users
+// GET api/users
 router.get('/', getUsers);
+
+// GET api/users/:id
+router.get('/:id', getUserById);
 
 export default router;
