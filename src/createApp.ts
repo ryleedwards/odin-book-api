@@ -1,6 +1,6 @@
 import express from 'express';
 import { Prisma, PrismaClient } from '@prisma/client';
-import usersRouter from './routes/users';
+import indexRouter from './routes/index';
 
 export function createApp() {
   const prisma = new PrismaClient();
@@ -8,9 +8,7 @@ export function createApp() {
 
   app.use(express.json());
 
-  // ROUTES
-
-  app.use('/api/users', usersRouter);
+  app.use('/', indexRouter);
 
   return app;
 }
