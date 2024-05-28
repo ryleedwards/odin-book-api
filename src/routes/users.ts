@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import { getUsers, getUserById, createUser } from '../handlers/users';
+import {
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+} from '../handlers/users';
 
 const router = Router();
 
@@ -11,5 +17,11 @@ router.get('/:id', getUserById);
 
 // POST api/users
 router.post('/', createUser);
+
+// PATCH api/users/:id
+router.patch('/:id', updateUser);
+
+// DELETE api/users/:id
+router.delete('/:id', deleteUser);
 
 export default router;
