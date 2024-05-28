@@ -35,15 +35,27 @@ export const getUserById = [
 ];
 
 export const createUser = [
+  // Validate the request body
+  body('email').isEmail(),
+  body('name').isString(),
+  // Submit query to create user
   async (
     req: Request<{}, {}, CreateUserDto>,
     res: Response,
     next: NextFunction
   ) => {
     try {
+      // Gather validation errors
+      const errors = validationResult(req);
+      // If there are errors, return with 400 status and validation errors
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      // No errors, create user
       const { email, name } = req.body;
       const user = await prisma.user.create({ data: { email, name } });
-      res.json(user);
+      res.status(201).json(user);
     } catch (e) {
       next(e);
     }
