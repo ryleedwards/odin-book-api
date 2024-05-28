@@ -13,6 +13,11 @@ const prismaErrorHandler = (
         error: `${err.meta?.target} already exists`,
       });
     }
+    if (err.code === 'P2025') {
+      res.status(404).json({
+        error: err.meta?.cause,
+      });
+    }
     res
       .status(400)
       .json({ code: err.code, meta: err.meta, error: err.message });
