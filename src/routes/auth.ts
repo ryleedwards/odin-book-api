@@ -3,10 +3,17 @@ import { Request, Response, NextFunction } from 'express-serve-static-core';
 import { Router } from 'express';
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
+import {
+  Strategy as JwtStrategy,
+  StrategyOptionsWithoutRequest,
+} from 'passport-jwt';
+import { ExtractJwt } from 'passport-jwt';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
+// Local strategy for authenticating email/password
 passport.use(
   new LocalStrategy.Strategy(
     {
@@ -27,13 +34,31 @@ passport.use(
   )
 );
 
+// JWT strategy for issuing JWT for protecting routes
+
+const opts: StrategyOptionsWithoutRequest = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.JWT_SECRET ? process.env.JWT_SECRET : '',
+};
+
+passport.use(new JwtStrategy(opts, async (jwtPayload, done) => {}));
+
 const router = Router();
 
 router.post(
   '/login',
   passport.authenticate('local', { session: false }),
-  (req, res, next) => {
-    res.json('hello');
+  (req: Request, res: Response, next: NextFunction) => {
+    // // Generate access token
+    if (!process.env.JWT_SECRET) {
+      res.status(500).json('Internal server error');
+    }
+    const accessToken = jwt.sign(
+      req.user as User,
+      process.env.JWT_SECRET ? process.env.JWT_SECRET : ''
+    );
+
+    res.json({ accessToken, user: req.user });
   }
 );
 
