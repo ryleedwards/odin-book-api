@@ -41,10 +41,28 @@ const opts: StrategyOptionsWithoutRequest = {
   secretOrKey: process.env.JWT_SECRET ? process.env.JWT_SECRET : '',
 };
 
-passport.use(new JwtStrategy(opts, async (jwtPayload, done) => {}));
+passport.use(
+  new JwtStrategy(opts, async (jwt_payload, done) => {
+    console.log(jwt_payload);
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: parseInt(jwt_payload) },
+      });
+      if (!user) {
+        return done(null, false);
+      } else {
+        return done(null, user);
+      }
+    } catch (err) {
+      console.log(err);
+      done(err);
+    }
+  })
+);
 
 const router = Router();
 
+// POST auth/login
 router.post(
   '/login',
   passport.authenticate('local', { session: false }),
@@ -53,12 +71,25 @@ router.post(
     if (!process.env.JWT_SECRET) {
       res.status(500).json('Internal server error');
     }
+    const user = req.user as User;
     const accessToken = jwt.sign(
-      req.user as User,
+      user.id.toString(),
       process.env.JWT_SECRET ? process.env.JWT_SECRET : ''
     );
-
     res.json({ accessToken, user: req.user });
+  }
+);
+
+// POST auth/status
+router.post(
+  '/status',
+  passport.authenticate('jwt', { session: false }),
+  (req: Request, res: Response) => {
+    if (!req.user) {
+      res.status(401).json({ authenticated: false });
+    } else {
+      res.status(200).json({ authenticated: true, user: req.user });
+    }
   }
 );
 
