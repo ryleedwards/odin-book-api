@@ -1,4 +1,5 @@
-[ ] Deploy EC2 instance
-[ ] Configure EC2 instance with prereqs (node, git, etc.)
-[ ] Pull from github
-[ ] 
+[x] Deploy EC2 instance
+[x] Configure EC2 instance with prereqs (node, git, etc.)
+[x] Pull from github
+[x] Set up auth
+[ ]
