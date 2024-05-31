@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 import { Request, Response, NextFunction } from 'express-serve-static-core';
 import { body, param, validationResult } from 'express-validator';
 import { CreateUserDto } from '../dtos/CreateUser.dto';
@@ -38,6 +39,7 @@ export const createUser = [
   // Validate the request body
   body('email').isEmail(),
   body('name').isString(),
+  body('password').isString(),
   // Submit query to create user
   async (
     req: Request<{}, {}, CreateUserDto>,
@@ -53,8 +55,11 @@ export const createUser = [
       }
 
       // No errors, create user
-      const { email, name } = req.body;
-      const user = await prisma.user.create({ data: { email, name } });
+      const { email, name, password } = req.body;
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = await prisma.user.create({
+        data: { email, name, password: hashedPassword },
+      });
       res.status(201).json(user);
     } catch (e) {
       next(e);
@@ -68,7 +73,7 @@ export const updateUser = [
   // Validate the request body
   body('email').isEmail().optional(),
   body('name').isString().optional(),
-
+  body('password').isString().optional(),
   async (req: Request<{ id: Number }, {}, UpdateUserDto>, res: Response) => {
     // Gather validation errors
     const errors = validationResult(req);
