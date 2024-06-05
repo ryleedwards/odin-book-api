@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { Prisma, PrismaClient } from '@prisma/client';
 import indexRouter from './routes/index';
 import errorHandler from './handlers/errors/error';
@@ -9,6 +10,7 @@ export function createApp() {
   const app = express();
 
   app.use(express.json());
+  app.use(cors());
 
   app.use('/', indexRouter);
   app.use(prismaErrorHandler);
