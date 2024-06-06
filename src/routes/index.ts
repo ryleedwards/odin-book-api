@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { Request, Response } from 'express-serve-static-core';
+import passport from 'passport';
 
 import authRouter from './auth';
 import usersRouter from './users';
 import postsRouter from './posts';
-import passport from 'passport';
+import commentsRouter from './comments';
 
 const router = Router();
 
@@ -22,6 +23,11 @@ router.use(
   '/api/posts',
   passport.authenticate('jwt', { session: false }),
   postsRouter
+);
+router.use(
+  '/api/comments',
+  passport.authenticate('jwt', { session: false }),
+  commentsRouter
 );
 
 export default router;
