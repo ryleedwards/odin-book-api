@@ -3,7 +3,7 @@ import { Request, Response } from 'express-serve-static-core';
 
 import authRouter from './auth';
 import usersRouter from './users';
-import postsRouter from './post';
+import postsRouter from './posts';
 import passport from 'passport';
 
 const router = Router();

@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { Request, Response, NextFunction } from 'express-serve-static-core';
 import { body, param, validationResult } from 'express-validator';
 import { CreatePostDto } from '../dtos/CreatePost.dto';
+import { UpdatePostDto } from '../dtos/UpdatePost.dto';
 import { User } from '../types/response';
 
 const prisma = new PrismaClient();
@@ -16,27 +17,25 @@ export const getPosts = async (req: Request, res: Response) => {
 export const getPostById = [
   // Validate the request params
   param('id').isInt(),
-  async (req: Request, res: Response) => {
-    async (req: Request<{ id: Number }>, res: Response) => {
-      // Gather validation errors
-      const errors = validationResult(req);
-      // If there are errors, return with 400 status and validation errors
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
-      // No errors, get id from params
-      const id = req.params.id;
-      // Submit query to get post
-      const post = await prisma.post.findUnique({
-        where: { id: Number(id) },
-      });
-      // If post doesn't exist, return 404
-      if (!post) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      // Return post
-      res.json(post);
-    };
+  async (req: Request<{ id: Number }>, res: Response) => {
+    // Gather validation errors
+    const errors = validationResult(req);
+    // If there are errors, return with 400 status and validation errors
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    // No errors, get id from params
+    const id = req.params.id;
+    // Submit query to get post
+    const post = await prisma.post.findUnique({
+      where: { id: Number(id) },
+    });
+    // If post doesn't exist, return 404
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    // Return post
+    res.json(post);
   },
 ];
 
@@ -76,5 +75,30 @@ export const createPost = [
     });
     // Return post
     res.status(201).json(post);
+  },
+];
+
+export const updatePost = [
+  // Validate the request params
+  param('id').isInt(),
+  // Validate the request body
+  body('content').isString().optional(),
+  async (req: Request<{ id: Number }, {}, UpdatePostDto>, res: Response) => {
+    // Gather validation errors
+    const errors = validationResult(req);
+    // If there are errors, return with 400 status and validation errors
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    // No errors, get id from params
+    const id = req.params.id;
+    // Submit query to update post
+    const { content } = req.body;
+    const post = await prisma.post.update({
+      where: { id: Number(id) },
+      data: { content },
+    });
+    // Return post
+    res.json(post);
   },
 ];
