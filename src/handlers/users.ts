@@ -125,3 +125,25 @@ export const deleteUser = [
     }
   },
 ];
+
+// GET api/users/:userId/posts
+export const getPostsByUser = [
+  // Validate the request params
+  param('userId').isInt(),
+  async (req: Request<{ userId: Number }>, res: Response) => {
+    // Gather validation errors
+    const errors = validationResult(req);
+    // If there are errors, return with 400 status and validation errors
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    // No errors, get id from params
+    const userId = req.params.userId;
+    // Submit query to get posts
+    const posts = await prisma.post.findMany({
+      where: { authorId: Number(userId) },
+    });
+    // Return posts
+    res.json(posts);
+  },
+];

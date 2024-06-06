@@ -5,6 +5,7 @@ import {
   createUser,
   updateUser,
   deleteUser,
+  getPostsByUser,
 } from '../handlers/users';
 
 const router = Router();
@@ -23,5 +24,8 @@ router.patch('/:id', updateUser);
 
 // DELETE api/users/:id
 router.delete('/:id', deleteUser);
+
+// GET api/users/:id/posts
+router.get('/:userId/posts', getPostsByUser);
 
 export default router;
