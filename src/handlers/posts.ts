@@ -131,3 +131,21 @@ export const deletePost = [
     }
   },
 ];
+
+// GET api/posts/:postId/comments
+export const getCommentsByPostId = [
+  param('postId').isInt(),
+  async (req: Request<{ postId: Number }>, res: Response) => {
+    // Validate the request params
+    const errors = validationResult(req);
+    // If there are errors, return with 400 status and validation errors
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    // No errors
+    const comments = await prisma.comment.findMany({
+      where: { postId: Number(req.params.postId) },
+    });
+    res.json(comments);
+  },
+];
