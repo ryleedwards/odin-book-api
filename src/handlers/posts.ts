@@ -33,6 +33,9 @@ export const getPostById = [
     // Submit query to get post
     const post = await prisma.post.findUnique({
       where: { id: Number(id) },
+      include: {
+        author: true,
+      },
     });
     // If post doesn't exist, return 404
     if (!post) {
@@ -76,6 +79,9 @@ export const createPost = [
     }
     const post = await prisma.post.create({
       data: { authorId, content },
+      include: {
+        author: true,
+      },
     });
     // Return post
     res.status(201).json(post);
@@ -101,6 +107,9 @@ export const updatePost = [
     const post = await prisma.post.update({
       where: { id: Number(id) },
       data: { content },
+      include: {
+        author: true,
+      },
     });
     // Return post
     res.json(post);
@@ -124,6 +133,9 @@ export const deletePost = [
       // Check if post exists
       const post = await prisma.post.findUnique({
         where: { id: Number(id) },
+        include: {
+          author: true,
+        },
       });
       if (!post) {
         return res.status(404).json({ error: 'Post not found' });
@@ -149,6 +161,9 @@ export const getCommentsByPostId = [
     // No errors
     const comments = await prisma.comment.findMany({
       where: { postId: Number(req.params.postId) },
+      include: {
+        author: true,
+      },
     });
     res.json(comments);
   },
