@@ -9,7 +9,11 @@ const prisma = new PrismaClient();
 
 // GET api/posts
 export const getPosts = async (req: Request, res: Response) => {
-  const posts = await prisma.post.findMany();
+  const posts = await prisma.post.findMany({
+    include: {
+      author: true,
+    },
+  });
   res.json(posts);
 };
 
