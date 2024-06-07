@@ -9,7 +9,11 @@ const prisma = new PrismaClient();
 
 // GET api/comments
 export const getComments = async (req: Request, res: Response) => {
-  const comments = await prisma.comment.findMany();
+  const comments = await prisma.comment.findMany({
+    include: {
+      author: true,
+    },
+  });
   res.json(comments);
 };
 
@@ -28,6 +32,9 @@ export const getCommentById = [
     const comment = await prisma.comment.findUnique({
       where: {
         id: Number(req.params.id),
+      },
+      include: {
+        author: true,
       },
     });
     res.json(comment);
@@ -67,6 +74,9 @@ export const createComment = [
       let post: Post | null;
       post = await prisma.post.findUnique({
         where: { id: Number(postId) },
+        include: {
+          author: true,
+        },
       });
       if (!post) {
         return res.status(422).json({
@@ -108,6 +118,9 @@ export const updateComment = [
     const comment = await prisma.comment.update({
       where: { id: Number(id) },
       data: { content },
+      include: {
+        author: true,
+      },
     });
     res.json(comment);
   },
