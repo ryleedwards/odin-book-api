@@ -1,26 +1,28 @@
 import { PrismaClient, Prisma } from '@prisma/client';
+import { seedData } from './seedData';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const alice = await prisma.user.upsert({
-    where: { email: 'alice@prisma.io' },
-    update: {},
-    create: {
-      email: 'alice@prisma.io',
-      name: 'Alice',
-    },
+  const created: Object[] = [];
+  seedData.forEach(async (user) => {
+    const hashedPassword = await bcrypt.hash(user.password, 10);
+    const createdUser = await prisma.user.upsert({
+      where: { email: user.email },
+      update: {},
+      create: {
+        name: user.name,
+        email: user.email,
+        password: hashedPassword,
+        posts: {
+          create: user.posts,
+        },
+      },
+    });
+    created.push(createdUser);
   });
-  const bob = await prisma.user.upsert({
-    where: { email: 'bob@prisma.io' },
-    update: {},
-    create: {
-      email: 'bob@prisma.io',
-      name: 'Bob',
-    },
-  });
-
-  console.log({ alice, bob });
+  console.log(created);
 }
 
 main()
