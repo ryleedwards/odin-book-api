@@ -4,6 +4,7 @@ import {
   getCommentById,
   createComment,
   updateComment,
+  deleteComment,
 } from '../handlers/comments';
 
 const router = Router();
@@ -15,5 +16,7 @@ router.get('/:id', getCommentById);
 router.post('/', createComment);
 
 router.patch('/:id', updateComment);
+
+router.delete('/:id', deleteComment);
 
 export default router;

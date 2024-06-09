@@ -125,3 +125,27 @@ export const updateComment = [
     res.json(comment);
   },
 ];
+
+// DELETE   api/comments/:id
+export const deleteComment = [
+  // Validate the request params
+  param('id').isInt(),
+  async (req: Request<{ id: Number }>, res: Response) => {
+    // Gather validation errors
+    const errors = validationResult(req);
+    // If there are errors, return with 400 status and validation errors
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    // No errors, get id from params
+    const id = req.params.id;
+    // Submit query to delete comment
+    const comment = await prisma.comment.delete({
+      where: { id: Number(id) },
+      include: {
+        author: true,
+      },
+    });
+    res.json(comment);
+  },
+];
