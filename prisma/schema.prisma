@@ -21,6 +21,7 @@ model User {
   password String
   posts Post[]
   comments Comment[]
+  profile Profile?
 }
 model Post {
   id  Int @id @default(autoincrement())
@@ -39,4 +40,13 @@ model Comment {
   postId  Int
   author  User @relation(fields: [authorId], references: [id])
   authorId  Int
+}
+
+model Profile {
+  id Int @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  image String?
+  about String?
+  user User @relation(fields: [userId], references: [id])
+  userId Int @unique
 }

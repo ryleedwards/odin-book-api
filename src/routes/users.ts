@@ -8,6 +8,8 @@ import {
   getPostsByUser,
 } from '../handlers/users';
 
+import profileRouter from './profile';
+
 const router = Router();
 
 // GET api/users
@@ -27,5 +29,8 @@ router.delete('/:id', deleteUser);
 
 // GET api/users/:id/posts
 router.get('/:userId/posts', getPostsByUser);
+
+// GET api/users/:id/profile
+router.use('/:id/profile', profileRouter);
 
 export default router;
