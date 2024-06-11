@@ -18,6 +18,9 @@ async function main() {
         posts: {
           create: user.posts,
         },
+        profile: {
+          create: user.profile,
+        },
       },
     });
     created.push(createdUser);
