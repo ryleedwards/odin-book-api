@@ -147,6 +147,7 @@ export const getPostsByUser = [
     // Submit query to get posts
     const posts = await prisma.post.findMany({
       where: { authorId: Number(userId) },
+      include: { author: true },
     });
     // Return posts
     res.json(posts);
