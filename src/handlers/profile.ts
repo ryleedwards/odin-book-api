@@ -65,7 +65,7 @@ export const createProfile = [
 export const updateProfile = [
   param('id').isInt(),
   body('about').isString().optional(),
-  body('image').isURL().optional(),
+  body('image').isURL().optional({ values: 'null' }),
   async (
     req: Request<{ id: Number }, {}, UpdateProfileDto>,
     res: Response,
