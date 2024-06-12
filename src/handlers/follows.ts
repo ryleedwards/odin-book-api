@@ -1,6 +1,7 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { Request, Response, NextFunction } from 'express-serve-static-core';
 import { body, param, validationResult } from 'express-validator';
+import { nextTick } from 'process';
 
 const prisma = new PrismaClient();
 
@@ -33,6 +34,7 @@ export const getFollowsByUserId = [
   },
 ];
 
+// GET api/users/:id/followers
 export const getFollowersByUserId = [
   // validate request params
   param('userId').isInt(),
@@ -60,6 +62,42 @@ export const getFollowersByUserId = [
   },
 ];
 
+// GET api/users/:id/followed
+export const isCurrentlyFollowed = [
+  // Validate the request params
+  param('userId').isInt(),
+  body('currentUserId').isInt(),
+  async (
+    req: Request<{ userId: Number }>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    // Gather validation errors
+    const errors = validationResult(req);
+    // If there are errors, return with 400 status and validation errors
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    // No errors, get id from params
+    const profileUserId = req.params.userId;
+    const { currentUserId } = req.body;
+    // Submit query to check if user is followed
+    try {
+      const followRecord = await prisma.follow.findFirst({
+        where: {
+          followerId: Number(currentUserId),
+          followingId: Number(profileUserId),
+        },
+      });
+      const isFollowed = followRecord !== null;
+      res.json({ isFollowed });
+    } catch (error) {
+      next(error);
+    }
+  },
+];
+
+// POST api/users/:id/follow
 export const createFollow = [
   // Validate the request params
   param('userId').isInt(),

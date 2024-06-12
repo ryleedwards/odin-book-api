@@ -13,6 +13,7 @@ import {
   createFollow,
   getFollowersByUserId,
   getFollowsByUserId,
+  isCurrentlyFollowed,
 } from '../handlers/follows';
 
 const router = Router();
@@ -44,6 +45,10 @@ router.get('/:userId/follows', getFollowsByUserId);
 // GET api/users/:id/followers
 router.get('/:userId/followers', getFollowersByUserId);
 
+// GET /api/users/:id/follow
+router.get('/:userId/follow', isCurrentlyFollowed);
+
+// POST api/users/:id/follow
 router.post('/:userId/follow', createFollow);
 
 export default router;
