@@ -14,39 +14,53 @@ datasource db {
 }
 
 model User {
-  id      Int      @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  email   String   @unique
-  name  String
-  password String
-  posts Post[]
-  comments Comment[]
-  profile Profile?
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now())
+  email     String      @unique
+  name      String
+  password  String
+  posts     Post[]
+  comments  Comment[]
+  profile   Profile?
+
+  followers Follow[] @relation("followings")
+  followings Follow[] @relation("followers")
 }
+
 model Post {
-  id  Int @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   createdAt DateTime  @default(now())
-  content String
-  author  User @relation(fields: [authorId], references: [id])
+  content   String
+  author    User      @relation(fields: [authorId], references: [id])
   authorId  Int
-  comments Comment[]
+  comments  Comment[]
 }
 
 model Comment {
-  id  Int @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  content String
-  post  Post  @relation(fields: [postId], references: [id])
-  postId  Int
-  author  User @relation(fields: [authorId], references: [id])
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  content   String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    Int
+  author    User     @relation(fields: [authorId], references: [id])
   authorId  Int
 }
 
 model Profile {
-  id Int @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  image String?
-  about String?
-  user User @relation(fields: [userId], references: [id])
-  userId Int @unique
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  image     String?
+  about     String?
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int      @unique
+}
+
+model Follow {
+  followerId Int
+  followingId Int
+  followedAt DateTime @default(now())
+  follower User @relation("followers", fields: [followerId], references: [id])
+  following User @relation("followings", fields: [followingId], references: [id])
+
+  @@id([followerId, followingId])
 }
