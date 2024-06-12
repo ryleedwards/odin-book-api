@@ -1,7 +1,6 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { Request, Response, NextFunction } from 'express-serve-static-core';
-import { body, param, validationResult } from 'express-validator';
-import { nextTick } from 'process';
+import { body, param, query, validationResult } from 'express-validator';
 
 const prisma = new PrismaClient();
 
@@ -66,7 +65,7 @@ export const getFollowersByUserId = [
 export const isCurrentlyFollowed = [
   // Validate the request params
   param('userId').isInt(),
-  body('currentUserId').isInt(),
+  query('currentUserId').isInt(),
   async (
     req: Request<{ userId: Number }>,
     res: Response,
@@ -80,7 +79,7 @@ export const isCurrentlyFollowed = [
     }
     // No errors, get id from params
     const profileUserId = req.params.userId;
-    const { currentUserId } = req.body;
+    const { currentUserId } = req.query;
     // Submit query to check if user is followed
     try {
       const followRecord = await prisma.follow.findFirst({
