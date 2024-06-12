@@ -9,6 +9,7 @@ import {
 } from '../handlers/users';
 
 import profileRouter from './profile';
+import { getFollowersByUserId, getFollowsByUserId } from '../handlers/follows';
 
 const router = Router();
 
@@ -32,5 +33,11 @@ router.get('/:userId/posts', getPostsByUser);
 
 // GET api/users/:id/profile
 router.use('/:id/profile', profileRouter);
+
+// GET api/users/:id/follows
+router.get('/:userId/follows', getFollowsByUserId);
+
+// GET api/users/:id/followers
+router.get('/:userId/followers', getFollowersByUserId);
 
 export default router;
