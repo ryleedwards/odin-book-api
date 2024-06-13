@@ -5,8 +5,7 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  const created: Object[] = [];
-  seedData.forEach(async (user) => {
+  const userPromises = seedData.map(async (user) => {
     const hashedPassword = await bcrypt.hash(user.password, 10);
     const createdUser = await prisma.user.upsert({
       where: { email: user.email },
@@ -16,16 +15,38 @@ async function main() {
         email: user.email,
         password: hashedPassword,
         posts: {
-          create: user.posts,
+          create: user.posts || [],
         },
-        profile: {
-          create: user.profile,
-        },
+        profile: user.profile
+          ? {
+              create: user.profile,
+            }
+          : undefined,
       },
     });
-    created.push(createdUser);
+    return createdUser;
   });
-  console.log(created);
+
+  const createdUsers = await Promise.all(userPromises);
+
+  // Create follow relationships
+  for (const user of seedData) {
+    const follower = createdUsers.find((u) => u.email === user.email);
+    if (follower) {
+      for (const followEmail of user.follows || []) {
+        const following = createdUsers.find((u) => u.email === followEmail);
+        if (following) {
+          await prisma.follow.create({
+            data: {
+              followerId: follower.id,
+              followingId: following.id,
+            },
+          });
+        }
+      }
+    }
+  }
+  console.log('Seeding completed.');
 }
 
 main()
