@@ -106,7 +106,6 @@ export const createFollow = [
     res: Response,
     next: NextFunction
   ) => {
-    console.log(req.body);
     // Gather validation errors
     const errors = validationResult(req);
     // If there are errors, return with 400 status and validation errors
