@@ -106,6 +106,7 @@ export const createFollow = [
     res: Response,
     next: NextFunction
   ) => {
+    console.log(req.body);
     // Gather validation errors
     const errors = validationResult(req);
     // If there are errors, return with 400 status and validation errors
@@ -133,6 +134,43 @@ export const createFollow = [
       });
       // Return follow
       res.json(follow);
+    } catch (error) {
+      next(error);
+    }
+  },
+];
+
+// DELETE api/users/:id/follow
+export const deleteFollow = [
+  // Validate the request params
+  param('userId').isInt(),
+  body('followerId').isInt(),
+  async (
+    req: Request<{ userId: Number }>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    // Gather validation errors
+    const errors = validationResult(req);
+    // If there are errors, return with 400 status and validation errors
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    // No errors, get id from params
+    const userId = req.params.userId;
+    const { followerId } = req.body;
+    // Submit query to delete follow
+    try {
+      const follow = await prisma.follow.delete({
+        where: {
+          followerId_followingId: {
+            followerId: Number(followerId),
+            followingId: Number(userId),
+          },
+        },
+      });
+      // Return follow
+      res.status(204).json({});
     } catch (error) {
       next(error);
     }

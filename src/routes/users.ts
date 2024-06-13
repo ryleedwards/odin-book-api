@@ -11,6 +11,7 @@ import {
 import profileRouter from './profile';
 import {
   createFollow,
+  deleteFollow,
   getFollowersByUserId,
   getFollowsByUserId,
   isCurrentlyFollowed,
@@ -50,5 +51,8 @@ router.get('/:userId/follow', isCurrentlyFollowed);
 
 // POST api/users/:id/follow
 router.post('/:userId/follow', createFollow);
+
+// DELETE api/users/:id/follow
+router.delete('/:userId/follow', deleteFollow);
 
 export default router;
