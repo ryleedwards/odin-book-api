@@ -8,13 +8,30 @@ import { User } from '../types/response';
 const prisma = new PrismaClient();
 
 // GET api/posts
-export const getPosts = async (req: Request, res: Response) => {
-  const posts = await prisma.post.findMany({
-    include: {
-      author: true,
-    },
-  });
-  res.json(posts);
+export const getPosts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sortBy = (req.query.sort_by as string) || 'createdAt';
+    const orderBy = (req.query.order_by as string) || 'desc';
+    // Validate order_by paramter
+    const validOrder = orderBy.toLowerCase() === 'asc' ? 'asc' : 'desc';
+
+    const posts = await prisma.post.findMany({
+      include: {
+        author: true,
+      },
+      orderBy: {
+        [sortBy]: validOrder,
+      },
+    });
+    res.json(posts);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 };
 
 // GET api/posts/:id
