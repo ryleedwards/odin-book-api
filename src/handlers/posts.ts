@@ -22,6 +22,7 @@ export const getPosts = async (
     const posts = await prisma.post.findMany({
       include: {
         author: true,
+        likes: true,
       },
       orderBy: {
         [sortBy]: validOrder,
@@ -52,6 +53,7 @@ export const getPostById = [
       where: { id: Number(id) },
       include: {
         author: true,
+        likes: true,
       },
     });
     // If post doesn't exist, return 404
@@ -126,6 +128,7 @@ export const updatePost = [
       data: { content },
       include: {
         author: true,
+        likes: true,
       },
     });
     // Return post
