@@ -25,15 +25,17 @@ model User {
 
   followers Follow[] @relation("followings")
   followings Follow[] @relation("followers")
+  likes Like[]
 }
 
 model Post {
   id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
+  createdAt DateTime  @default(now()) 
   content   String
   author    User      @relation(fields: [authorId], references: [id])
   authorId  Int
   comments  Comment[]
+  likes Like[]
 }
 
 model Comment {
@@ -63,4 +65,15 @@ model Follow {
   following User @relation("followings", fields: [followingId], references: [id])
 
   @@id([followerId, followingId])
+}
+
+model Like {
+  id  Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  user User @relation(fields:[userId], references:[id])
+  userId Int
+  post Post @relation(fields:[postId], references:[id])
+  postId Int
+
+  @@unique([userId, postId])
 }
