@@ -22,7 +22,7 @@ export const getPosts = async (
     const posts = await prisma.post.findMany({
       include: {
         author: true,
-        likes: true,
+        likes: { include: { user: true } },
       },
       orderBy: {
         [sortBy]: validOrder,
