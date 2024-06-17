@@ -1,6 +1,7 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import { seedData } from './seedData';
 import bcrypt from 'bcryptjs';
+import _ from 'lodash';
 
 const prisma = new PrismaClient();
 
@@ -46,6 +47,24 @@ async function main() {
       }
     }
   }
+
+  // Add likes to posts
+  const allUsers = await prisma.user.findMany();
+  const allPosts = await prisma.post.findMany();
+
+  for (const post of allPosts) {
+    const usersToLike = _.sampleSize(allUsers, _.random(0, 5));
+
+    for (const user of usersToLike) {
+      await prisma.like.create({
+        data: {
+          userId: user.id,
+          postId: post.id,
+        },
+      });
+    }
+  }
+
   console.log('Seeding completed.');
 }
 

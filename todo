@@ -9,7 +9,8 @@ Odin Requirements
 [x] Users should be able to sign in using your chosen authentication method.
 [x] Users can send follow requests to other users.
 [x] Users can create posts (begin with text only).
-[ ] Users can like posts.
+[x] Users can like posts.
+--[ ] Future: Add modal display of who has liked the post.
 [ ] Users can comment on posts.
 [ ] Posts should always display the post content, author, comments, and likes.
 [ ] There should be an index page for posts, which shows all the recent posts from the current user and users they are following.
