@@ -5,6 +5,19 @@ import _ from 'lodash';
 
 const prisma = new PrismaClient();
 
+const comments = [
+  'Great post!',
+  'Really insightful.',
+  'I totally agree with you.',
+  'Well written!',
+  'Thank you for sharing this.',
+  'Interesting perspective.',
+  'I learned something new today.',
+  'This is awesome!',
+  'Keep up the great work!',
+  'Loved reading this!',
+];
+
 async function main() {
   const userPromises = seedData.map(async (user) => {
     const hashedPassword = await bcrypt.hash(user.password, 10);
@@ -62,6 +75,26 @@ async function main() {
           postId: post.id,
         },
       });
+    }
+  }
+
+  // Add comments to posts
+
+  for (const post of allPosts) {
+    const numberOfComments = _.random(0, 4);
+    const selectedComments = _.sampleSize(comments, numberOfComments);
+
+    for (const commentText of selectedComments) {
+      const randomUser = _.sample(allUsers);
+      if (randomUser) {
+        await prisma.comment.create({
+          data: {
+            content: commentText,
+            post: { connect: { id: post.id } },
+            author: { connect: { id: randomUser.id } },
+          },
+        });
+      }
     }
   }
 
