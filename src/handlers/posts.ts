@@ -23,6 +23,7 @@ export const getPosts = async (
       include: {
         author: true,
         likes: { include: { user: true } },
+        comments: { include: { author: { include: { profile: true } } } },
       },
       orderBy: {
         [sortBy]: validOrder,
