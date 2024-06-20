@@ -147,7 +147,11 @@ export const getPostsByUser = [
     // Submit query to get posts
     const posts = await prisma.post.findMany({
       where: { authorId: Number(userId) },
-      include: { author: true, likes: { include: { user: true } } },
+      include: {
+        author: true,
+        likes: { include: { user: true } },
+        comments: { include: { author: true } },
+      },
     });
     // Return posts
     res.json(posts);

@@ -8,4 +8,12 @@ export interface Post {
   id: number;
   authorId: number;
   content: string;
+  comments?: Comment[];
+}
+
+export interface Comment {
+  id: number;
+  authorId: number;
+  postId: number;
+  content: string;
 }
