@@ -54,7 +54,8 @@ export const getPostById = [
       where: { id: Number(id) },
       include: {
         author: true,
-        likes: true,
+        likes: { include: { user: true } },
+        comments: { include: { author: { include: { profile: true } } } },
       },
     });
     // If post doesn't exist, return 404
