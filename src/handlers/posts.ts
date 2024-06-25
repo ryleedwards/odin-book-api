@@ -196,7 +196,8 @@ export const getCommentsByPostId = [
 // POST api/posts/:postId/comments
 export const createCommentByPostId = [
   param('postId').isInt(),
-
+  body('authorId').isInt(),
+  body('content').isString(),
   async (
     req: Request<{ postId: Number }, {}, CreateCommentDto>,
     res: Response,
