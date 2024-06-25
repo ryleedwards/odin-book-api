@@ -3,7 +3,9 @@ import { Request, Response, NextFunction } from 'express-serve-static-core';
 import { body, param, validationResult } from 'express-validator';
 import { CreatePostDto } from '../dtos/CreatePost.dto';
 import { UpdatePostDto } from '../dtos/UpdatePost.dto';
-import { User } from '../types/response';
+import { Post, User } from '../types/response';
+import { CreateCommentDto } from '../dtos/CreateComment.dto';
+import { nextTick } from 'process';
 
 const prisma = new PrismaClient();
 
@@ -188,5 +190,65 @@ export const getCommentsByPostId = [
       },
     });
     res.json(comments);
+  },
+];
+
+// POST api/posts/:postId/comments
+export const createCommentByPostId = [
+  param('postId').isInt(),
+
+  async (
+    req: Request<{ postId: Number }, {}, CreateCommentDto>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    // Validate the request params
+    const errors = validationResult(req);
+    // If there are errors, return with 400 status and validation errors
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    // No errors
+    const { postId } = req.params;
+    const { content, authorId } = req.body;
+
+    try {
+      // Check if author exists
+      let user: User | null;
+      user = await prisma.user.findUnique({
+        where: { id: Number(authorId) },
+      });
+      if (!user) {
+        return res.status(422).json({
+          error:
+            'Comment author does not exist, please check supplied authorId',
+        });
+      }
+
+      // Check if post exists
+      let post: Post | null;
+      post = await prisma.post.findUnique({
+        where: { id: Number(postId) },
+        include: {
+          author: true,
+        },
+      });
+      if (!post) {
+        return res.status(422).json({
+          error: 'Post does not exist, please check supplied postId',
+        });
+      }
+
+      const comment = await prisma.comment.create({
+        data: {
+          authorId: Number(authorId),
+          postId: Number(postId),
+          content,
+        },
+      });
+      res.status(201).json(comment);
+    } catch (e) {
+      next(e);
+    }
   },
 ];
