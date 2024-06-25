@@ -6,6 +6,7 @@ import {
   updatePost,
   deletePost,
   getCommentsByPostId,
+  createCommentByPostId,
 } from '../handlers/posts';
 
 import { getLikesByPostId, createLike, deleteLike } from '../handlers/likes';
@@ -24,6 +25,8 @@ router.patch('/:id', updatePost);
 router.delete('/:id', deletePost);
 // GET api/posts/:postId/comments
 router.get('/:postId/comments', getCommentsByPostId);
+// POST api/posts/:postId/comments
+router.post('/:postId/comments', createCommentByPostId);
 // GET api/posts/:id/likes
 router.get('/:postId/likes', getLikesByPostId);
 // POST api/posts/:id/likes

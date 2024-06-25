@@ -60,8 +60,8 @@ export const createComment = [
     }
     // No errors >> extract data from request body
     const { authorId, postId, content } = req.body;
-    let user: User | null;
     try {
+      let user: User | null;
       user = await prisma.user.findUnique({
         where: { id: Number(authorId) },
       });
