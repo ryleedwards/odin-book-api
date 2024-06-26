@@ -1,43 +1,75 @@
 import { PrismaClient } from '@prisma/client';
 import { Request, Response, NextFunction } from 'express-serve-static-core';
-import { body, param, validationResult } from 'express-validator';
+import { body, param, validationResult, query } from 'express-validator';
 import { CreatePostDto } from '../dtos/CreatePost.dto';
 import { UpdatePostDto } from '../dtos/UpdatePost.dto';
 import { Post, User } from '../types/response';
 import { CreateCommentDto } from '../dtos/CreateComment.dto';
-import { nextTick } from 'process';
 
 const prisma = new PrismaClient();
 
 // GET api/posts
-export const getPosts = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const sortBy = (req.query.sort_by as string) || 'createdAt';
-    const orderBy = (req.query.order_by as string) || 'desc';
-    // Validate order_by paramter
-    const validOrder = orderBy.toLowerCase() === 'asc' ? 'asc' : 'desc';
+export const getPosts = [
+  // Validate query params
+  query('sort_by').isString().optional(),
+  query('order_by').isString().optional(),
+  query('view').isString().optional(),
 
-    const posts = await prisma.post.findMany({
-      include: {
-        author: true,
-        likes: { include: { user: true } },
-        comments: { include: { author: { include: { profile: true } } } },
-      },
-      orderBy: {
-        [sortBy]: validOrder,
-      },
-    });
-    res.json(posts);
-  } catch (error) {
-    console.log(error);
-    next(error);
-  }
-};
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const sortBy = (req.query.sort_by as string) || 'createdAt';
+      const orderBy = (req.query.order_by as string) || 'desc';
+      // Validate order_by parameter
+      const validOrder = orderBy.toLowerCase() === 'asc' ? 'asc' : 'desc';
 
+      const view = (req.query.view as string) || 'all';
+
+      // Following view >> return posts by authors followed + current user posts
+      if (view === 'following') {
+        const user = req.user as User;
+        const posts = await prisma.post.findMany({
+          where: {
+            OR: [
+              {
+                // Return posts by author if user is following them
+                author: {
+                  followers: { some: { followerId: user.id } },
+                },
+              },
+              // Return posts by the current user
+              {
+                authorId: user.id,
+              },
+            ],
+          },
+          include: {
+            author: true,
+            likes: { include: { user: true } },
+            comments: { include: { author: { include: { profile: true } } } },
+          },
+        });
+        res.json(posts);
+      } else {
+        const posts = await prisma.post.findMany({
+          include: {
+            author: true,
+            likes: { include: { user: true } },
+            comments: {
+              include: { author: { include: { profile: true } } },
+            },
+          },
+          orderBy: {
+            [sortBy]: validOrder,
+          },
+        });
+        res.json(posts);
+      }
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  },
+];
 // GET api/posts/:id
 export const getPostById = [
   // Validate the request params
