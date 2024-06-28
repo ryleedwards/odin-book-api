@@ -85,7 +85,11 @@ export const updateUser = [
   body('profile').isObject().optional(),
   body('about').isString().optional(),
   body('image').isURL().optional({ values: 'null' }),
-  async (req: Request<{ id: Number }, {}, UpdateUserDto>, res: Response) => {
+  async (
+    req: Request<{ id: Number }, {}, UpdateUserDto>,
+    res: Response,
+    next: NextFunction
+  ) => {
     // Gather validation errors
     const errors = validationResult(req);
     // If there are errors, return with 400 status and validation errors
@@ -96,25 +100,29 @@ export const updateUser = [
     const id = req.params.id;
     // Submit query to update user
     const { email, name } = req.body;
-    const user = await prisma.user.update({
-      where: { id: Number(id) },
-      include: { profile: true },
-      data: {
-        email,
-        name,
-        profile: {
-          update: {
-            where: { userId: Number(id) },
-            data: {
-              about: req.body.profile?.about,
-              image: req.body.profile?.image,
+    try {
+      const user = await prisma.user.update({
+        where: { id: Number(id) },
+        include: { profile: true },
+        data: {
+          email,
+          name,
+          profile: {
+            update: {
+              where: { userId: Number(id) },
+              data: {
+                about: req.body.profile?.about,
+                image: req.body.profile?.image,
+              },
             },
           },
         },
-      },
-    });
-    // Return user
-    res.json(user);
+      });
+      // Return user
+      res.status(204).json(user);
+    } catch (e) {
+      next(e);
+    }
   },
 ];
 
