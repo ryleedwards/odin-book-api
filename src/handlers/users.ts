@@ -25,7 +25,10 @@ export const getUserById = [
     // No errors, get id from params
     const id = req.params.id;
     // Submit query to get user
-    const user = await prisma.user.findUnique({ where: { id: Number(id) } });
+    const user = await prisma.user.findUnique({
+      where: { id: Number(id) },
+      include: { profile: true },
+    });
     // If user doesn't exist, return 404
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -79,6 +82,9 @@ export const updateUser = [
   body('email').isEmail().optional(),
   body('name').isString().optional(),
   body('password').isString().optional(),
+  body('profile').isObject().optional(),
+  body('about').isString().optional(),
+  body('image').isURL().optional({ values: 'null' }),
   async (req: Request<{ id: Number }, {}, UpdateUserDto>, res: Response) => {
     // Gather validation errors
     const errors = validationResult(req);
@@ -92,7 +98,20 @@ export const updateUser = [
     const { email, name } = req.body;
     const user = await prisma.user.update({
       where: { id: Number(id) },
-      data: { email, name },
+      include: { profile: true },
+      data: {
+        email,
+        name,
+        profile: {
+          update: {
+            where: { userId: Number(id) },
+            data: {
+              about: req.body.profile?.about,
+              image: req.body.profile?.image,
+            },
+          },
+        },
+      },
     });
     // Return user
     res.json(user);
