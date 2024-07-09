@@ -177,7 +177,7 @@ export const getPostsByUser = [
       include: {
         author: { include: { profile: true } },
         likes: { include: { user: true } },
-        comments: { include: { author: true } },
+        comments: { include: { author: { include: { profile: true } } } },
       },
     });
     // Return posts

@@ -218,7 +218,7 @@ export const getCommentsByPostId = [
     const comments = await prisma.comment.findMany({
       where: { postId: Number(req.params.postId) },
       include: {
-        author: true,
+        author: { include: { profile: true } },
       },
     });
     res.json(comments);
