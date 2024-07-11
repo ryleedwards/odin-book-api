@@ -5,6 +5,7 @@ import { CreatePostDto } from '../dtos/CreatePost.dto';
 import { UpdatePostDto } from '../dtos/UpdatePost.dto';
 import { UpdateProfileDto } from '../dtos/UpdateProfile.dto';
 import { CreateProfileDto } from '../dtos/CreateProfile.dto';
+import { handleUpload } from '../helpers/cloudinary';
 
 const prisma = new PrismaClient();
 
@@ -115,3 +116,25 @@ export const deleteProfile = [
     res.json(profile);
   },
 ];
+
+export const uploadProfilePicture = async (
+  req: Request<{}, {}, { file: Express.Multer.File }>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    console.log('here');
+    const fileBuffer = req.file?.buffer;
+    if (!fileBuffer) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    } else {
+      const b64 = Buffer.from(fileBuffer).toString('base64');
+      let dataURI = `data:${req.file?.mimetype};base64,${b64}`;
+      const cldRes = await handleUpload(dataURI);
+      res.json(cldRes);
+    }
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
