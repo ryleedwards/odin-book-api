@@ -29,7 +29,7 @@ router.delete('/', deleteProfile);
 // POST users/:id/profile/upload-profile-picture
 router.post(
   '/upload-profile-picture',
-  upload.single('my_file'),
+  upload.single('profile_picture'),
   uploadProfilePicture
 );
 
