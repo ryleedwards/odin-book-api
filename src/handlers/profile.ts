@@ -80,15 +80,19 @@ export const updateProfile = [
     // No errors, get id from params
     const userId = req.params.id;
     // Submit query to update profile
-    const profile = await prisma.profile.update({
-      where: { userId: Number(userId) },
-      data: req.body,
-      include: {
-        user: true,
-      },
-    });
-    // Return profile
-    res.json(profile);
+    try {
+      const profile = await prisma.profile.update({
+        where: { userId: Number(userId) },
+        data: req.body,
+        include: {
+          user: true,
+        },
+      });
+      // Return profile
+      res.json(profile);
+    } catch (error) {
+      next(error);
+    }
   },
 ];
 
