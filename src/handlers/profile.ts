@@ -5,7 +5,7 @@ import { CreatePostDto } from '../dtos/CreatePost.dto';
 import { UpdatePostDto } from '../dtos/UpdatePost.dto';
 import { UpdateProfileDto } from '../dtos/UpdateProfile.dto';
 import { CreateProfileDto } from '../dtos/CreateProfile.dto';
-import { handleUpload } from '../helpers/cloudinary';
+import { handleUpload, handleDelete } from '../helpers/cloudinary';
 
 const prisma = new PrismaClient();
 
@@ -133,19 +133,33 @@ export const uploadProfilePicture = [
     // No errors, get id from params
     const userId = req.params.id;
     try {
-      console.log('here');
+      // Check if file was uploaded
       const fileBuffer = req.file?.buffer;
       if (!fileBuffer) {
         return res.status(400).json({ error: 'No file uploaded' });
-      } else {
-        const b64 = Buffer.from(fileBuffer).toString('base64');
-        let dataURI = `data:${req.file?.mimetype};base64,${b64}`;
-        const cldRes = await handleUpload(dataURI);
-        const profile = await prisma.profile.update({
-          where: { userId: Number(userId) },
-          data: { image: cldRes.public_id },
-        });
       }
+
+      // Get current profile picture publicId for deletion
+      const currentProfile = await prisma.profile.findUnique({
+        where: { userId: Number(userId) },
+      });
+
+      // Upload new profile picture to cloudinary
+      const b64 = Buffer.from(fileBuffer).toString('base64');
+      let dataURI = `data:${req.file?.mimetype};base64,${b64}`;
+      const cldRes = await handleUpload(dataURI);
+
+      // Delete old profile picture from cloudinary
+      if (currentProfile?.image) {
+        await handleDelete(currentProfile.image);
+      }
+
+      // Submit query to update profile with new publicId
+      const profile = await prisma.profile.update({
+        where: { userId: Number(userId) },
+        data: { image: cldRes.public_id },
+      });
+
       res.sendStatus(200);
     } catch (error) {
       console.log(error);

@@ -11,3 +11,8 @@ export async function handleUpload(file: string) {
   const res = await cloudinary.uploader.upload(file, { resource_type: 'auto' });
   return res;
 }
+
+export async function handleDelete(public_id: string) {
+  const res = await cloudinary.uploader.destroy(public_id);
+  return res;
+}
