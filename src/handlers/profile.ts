@@ -117,24 +117,39 @@ export const deleteProfile = [
   },
 ];
 
-export const uploadProfilePicture = async (
-  req: Request<{}, {}, { file: Express.Multer.File }>,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    console.log('here');
-    const fileBuffer = req.file?.buffer;
-    if (!fileBuffer) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    } else {
-      const b64 = Buffer.from(fileBuffer).toString('base64');
-      let dataURI = `data:${req.file?.mimetype};base64,${b64}`;
-      const cldRes = await handleUpload(dataURI);
-      res.json(cldRes);
+export const uploadProfilePicture = [
+  param('id').isInt(),
+  async (
+    req: Request<{ id: string }, {}, { file: Express.Multer.File }>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    // Gather validation errors
+    const errors = validationResult(req);
+    // If there are errors, return with 400 status and validation errors
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
-  } catch (error) {
-    console.log(error);
-    next(error);
-  }
-};
+    // No errors, get id from params
+    const userId = req.params.id;
+    try {
+      console.log('here');
+      const fileBuffer = req.file?.buffer;
+      if (!fileBuffer) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      } else {
+        const b64 = Buffer.from(fileBuffer).toString('base64');
+        let dataURI = `data:${req.file?.mimetype};base64,${b64}`;
+        const cldRes = await handleUpload(dataURI);
+        const profile = await prisma.profile.update({
+          where: { userId: Number(userId) },
+          data: { image: cldRes.public_id },
+        });
+      }
+      res.sendStatus(200);
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  },
+];
