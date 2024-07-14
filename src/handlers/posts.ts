@@ -43,7 +43,7 @@ export const getPosts = [
             ],
           },
           include: {
-            author: true,
+            author: { include: { profile: true } },
             likes: { include: { user: true } },
             comments: { include: { author: { include: { profile: true } } } },
           },
@@ -52,7 +52,7 @@ export const getPosts = [
       } else {
         const posts = await prisma.post.findMany({
           include: {
-            author: true,
+            author: { include: { profile: true } },
             likes: { include: { user: true } },
             comments: {
               include: { author: { include: { profile: true } } },
@@ -87,7 +87,7 @@ export const getPostById = [
     const post = await prisma.post.findUnique({
       where: { id: Number(id) },
       include: {
-        author: true,
+        author: { include: { profile: true } },
         likes: { include: { user: true } },
         comments: { include: { author: { include: { profile: true } } } },
       },
@@ -218,7 +218,7 @@ export const getCommentsByPostId = [
     const comments = await prisma.comment.findMany({
       where: { postId: Number(req.params.postId) },
       include: {
-        author: true,
+        author: { include: { profile: true } },
       },
     });
     res.json(comments);

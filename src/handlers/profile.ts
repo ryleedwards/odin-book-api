@@ -5,6 +5,7 @@ import { CreatePostDto } from '../dtos/CreatePost.dto';
 import { UpdatePostDto } from '../dtos/UpdatePost.dto';
 import { UpdateProfileDto } from '../dtos/UpdateProfile.dto';
 import { CreateProfileDto } from '../dtos/CreateProfile.dto';
+import { handleUpload, handleDelete } from '../helpers/cloudinary';
 
 const prisma = new PrismaClient();
 
@@ -80,15 +81,19 @@ export const updateProfile = [
     // No errors, get id from params
     const userId = req.params.id;
     // Submit query to update profile
-    const profile = await prisma.profile.update({
-      where: { userId: Number(userId) },
-      data: req.body,
-      include: {
-        user: true,
-      },
-    });
-    // Return profile
-    res.json(profile);
+    try {
+      const profile = await prisma.profile.update({
+        where: { userId: Number(userId) },
+        data: req.body,
+        include: {
+          user: true,
+        },
+      });
+      // Return profile
+      res.json(profile);
+    } catch (error) {
+      next(error);
+    }
   },
 ];
 
@@ -109,5 +114,56 @@ export const deleteProfile = [
     });
     // Return profile
     res.json(profile);
+  },
+];
+
+export const uploadProfilePicture = [
+  param('id').isInt(),
+  async (
+    req: Request<{ id: string }, {}, { file: Express.Multer.File }>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    // Gather validation errors
+    const errors = validationResult(req);
+    // If there are errors, return with 400 status and validation errors
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    // No errors, get id from params
+    const userId = req.params.id;
+    try {
+      // Check if file was uploaded
+      const fileBuffer = req.file?.buffer;
+      if (!fileBuffer) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+
+      // Get current profile picture publicId for deletion
+      const currentProfile = await prisma.profile.findUnique({
+        where: { userId: Number(userId) },
+      });
+
+      // Upload new profile picture to cloudinary
+      const b64 = Buffer.from(fileBuffer).toString('base64');
+      let dataURI = `data:${req.file?.mimetype};base64,${b64}`;
+      const cldRes = await handleUpload(dataURI);
+
+      // Delete old profile picture from cloudinary
+      if (currentProfile?.image) {
+        await handleDelete(currentProfile.image);
+      }
+
+      // Submit query to update profile with new publicId
+      const profile = await prisma.profile.update({
+        where: { userId: Number(userId) },
+        data: { image: cldRes.public_id },
+      });
+
+      res.sendStatus(200);
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
   },
 ];

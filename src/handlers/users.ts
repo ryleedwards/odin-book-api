@@ -25,7 +25,10 @@ export const getUserById = [
     // No errors, get id from params
     const id = req.params.id;
     // Submit query to get user
-    const user = await prisma.user.findUnique({ where: { id: Number(id) } });
+    const user = await prisma.user.findUnique({
+      where: { id: Number(id) },
+      include: { profile: true },
+    });
     // If user doesn't exist, return 404
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -79,7 +82,14 @@ export const updateUser = [
   body('email').isEmail().optional(),
   body('name').isString().optional(),
   body('password').isString().optional(),
-  async (req: Request<{ id: Number }, {}, UpdateUserDto>, res: Response) => {
+  body('profile').isObject().optional(),
+  body('about').isString().optional(),
+  body('image').isURL().optional({ values: 'null' }),
+  async (
+    req: Request<{ id: Number }, {}, UpdateUserDto>,
+    res: Response,
+    next: NextFunction
+  ) => {
     // Gather validation errors
     const errors = validationResult(req);
     // If there are errors, return with 400 status and validation errors
@@ -90,12 +100,29 @@ export const updateUser = [
     const id = req.params.id;
     // Submit query to update user
     const { email, name } = req.body;
-    const user = await prisma.user.update({
-      where: { id: Number(id) },
-      data: { email, name },
-    });
-    // Return user
-    res.json(user);
+    try {
+      const user = await prisma.user.update({
+        where: { id: Number(id) },
+        include: { profile: true },
+        data: {
+          email,
+          name,
+          profile: {
+            update: {
+              where: { userId: Number(id) },
+              data: {
+                about: req.body.profile?.about,
+                image: req.body.profile?.image,
+              },
+            },
+          },
+        },
+      });
+      // Return user
+      res.status(204).json(user);
+    } catch (e) {
+      next(e);
+    }
   },
 ];
 
@@ -148,9 +175,9 @@ export const getPostsByUser = [
     const posts = await prisma.post.findMany({
       where: { authorId: Number(userId) },
       include: {
-        author: true,
+        author: { include: { profile: true } },
         likes: { include: { user: true } },
-        comments: { include: { author: true } },
+        comments: { include: { author: { include: { profile: true } } } },
       },
     });
     // Return posts
