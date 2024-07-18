@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 
 export const getUsers = async (req: Request, res: Response) => {
   const users = await prisma.user.findMany({
-    include: { profile: true },
+    include: { profile: true, followers: true },
   });
   res.json(users);
 };
