@@ -8,7 +8,9 @@ import { UpdateUserDto } from '../dtos/UpdateUser.dto';
 const prisma = new PrismaClient();
 
 export const getUsers = async (req: Request, res: Response) => {
-  const users = await prisma.user.findMany();
+  const users = await prisma.user.findMany({
+    include: { profile: true, followers: true },
+  });
   res.json(users);
 };
 
