@@ -50,10 +50,17 @@ async function main() {
       for (const followEmail of user.follows || []) {
         const following = createdUsers.find((u) => u.email === followEmail);
         if (following) {
-          await prisma.follow.create({
-            data: {
-              followerId: follower.id,
-              followingId: following.id,
+          await prisma.follow.upsert({
+            where: {
+              followerId_followingId: {
+                followerId: follower.id,
+                followingId: following.id,
+              },
+            },
+            update: {},
+            create: {
+              follower: { connect: { id: follower.id } },
+              following: { connect: { id: following.id } },
             },
           });
         }
@@ -69,8 +76,15 @@ async function main() {
     const usersToLike = _.sampleSize(allUsers, _.random(0, 5));
 
     for (const user of usersToLike) {
-      await prisma.like.create({
-        data: {
+      await prisma.like.upsert({
+        where: {
+          userId_postId: {
+            userId: user.id,
+            postId: post.id,
+          },
+        },
+        update: {},
+        create: {
           userId: user.id,
           postId: post.id,
         },
